@@ -1,24 +1,30 @@
 import fs from "fs";
+import path from "path";
 
-export const streamVideo = (req, res, path) => {
-  const stat = fs.statSync(path);
-  const range = req.headers.range;
+export const getVideoStream = (filePath, range) => {
+  const stat = fs.statSync(filePath);
+  const fileSize = stat.size;
+  const videoPath = path.resolve(filePath);
 
-  if (!range) {
-    res.writeHead(200, { "Content-Length": stat.size });
-    fs.createReadStream(path).pipe(res);
-    return;
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const chunksize = end - start + 1;
+    const file = fs.createReadStream(videoPath, { start, end });
+    const head = {
+      "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+      "Accept-Ranges": "bytes",
+      "Content-Length": chunksize,
+      "Content-Type": "video/mp4",
+    };
+    return { head, file };
+  } else {
+    const head = {
+      "Content-Length": fileSize,
+      "Content-Type": "video/mp4",
+    };
+    const file = fs.createReadStream(videoPath);
+    return { head, file };
   }
-
-  const [start, end] = range.replace(/bytes=/, "").split("-");
-  const s = parseInt(start);
-  const e = end ? parseInt(end) : stat.size - 1;
-
-  res.writeHead(206, {
-    "Content-Range": `bytes ${s}-${e}/${stat.size}`,
-    "Accept-Ranges": "bytes",
-    "Content-Length": e - s + 1,
-  });
-
-  fs.createReadStream(path, { start: s, end: e }).pipe(res);
 };
