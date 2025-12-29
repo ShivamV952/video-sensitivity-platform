@@ -298,18 +298,4 @@ If you get "Cannot find ffprobe" error:
 - Implement proper CORS policies
 - Add input validation and sanitization
 
-## 📄 License
-
-ISC
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📧 Support
-
-For issues and questions, please open an issue on the repository.
-
----
-
 **Note**: This platform uses FFmpeg for real video analysis. Make sure FFmpeg is installed on your system before running the application.
